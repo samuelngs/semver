@@ -7,7 +7,7 @@ type Err struct {
 
 // Response represents a valid semver version
 type Response struct {
-	ID      string   `json:"id,omitempty" xml"id,omitempty"`
+	ID      string   `json:"id,omitempty" xml:"id,omitempty"`
 	Version string   `json:"version,omitempty" xml:"version,omitempty"`
 	Major   uint64   `json:"major" xml:"major"`
 	Minor   uint64   `json:"minor" xml:"minor"`
@@ -17,5 +17,5 @@ type Response struct {
 
 // List represents a list of semver version
 type List struct {
-	Versions []interface{} `json:"versions" xml"version"`
+	Versions []interface{} `json:"versions" xml:"version"`
 }
