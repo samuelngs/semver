@@ -15,3 +15,6 @@ test:
 	go vet ${GOPACKAGES}
 	go test -race -test.v ${GOPACKAGES}
 
+.PHONY: image
+image: test all
+	docker build --no-cache --tag gcr.io/develo-pe/semver:latest --file Dockerfile .
