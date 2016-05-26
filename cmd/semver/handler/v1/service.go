@@ -69,6 +69,11 @@ func resp(c echo.Context, i *Response) error {
 	}
 }
 
+// Default route
+func Default(c echo.Context) error {
+	return c.String(http.StatusOK, "ok")
+}
+
 // New Semver
 func New(c echo.Context) error {
 	var id string

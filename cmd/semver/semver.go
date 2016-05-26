@@ -12,6 +12,7 @@ func main() {
 
 	e := echo.New()
 
+	e.Get("/", v1.Default)
 	e.Get("/v1/new", v1.New)
 	e.Get("/v1/:id", v1.Get)
 	e.Get("/v1/:id/bump", v1.Bump)

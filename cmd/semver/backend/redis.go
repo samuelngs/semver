@@ -1,15 +1,21 @@
 package backend
 
-import "gopkg.in/redis.v3"
+import (
+	"os"
+
+	"gopkg.in/redis.v3"
+)
 
 var client *redis.Client
 
 func init() {
 	opts := &redis.Options{
 		Addr:       "localhost:6379",
-		Password:   "",
 		DB:         0,
 		MaxRetries: 5,
+	}
+	if os.Getenv("DOCKER") != "" {
+		opts.Addr = "redis:6379"
 	}
 	client = redis.NewClient(opts)
 }
