@@ -1,9 +1,11 @@
 package: github.com/samuelngs/semver
 import:
 - package: gopkg.in/redis.v3
-- package: github.com/labstack/echo
-- package: github.com/labstack/gommon
-  subpackages:
-  - log
-- package: github.com/satori/go.uuid
 - package: github.com/blang/semver
+- package: github.com/satori/go.uuid
+- package: github.com/kataras/iris
+  subpackages:
+  - iris
+- package: google.golang.org/appengine
+  subpackages:
+  - datastore
