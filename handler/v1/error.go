@@ -7,4 +7,6 @@ var (
 	ErrProjectNotFound         = errors.New("project id does not match any records in our database")
 	ErrInvalidVersioningFormat = errors.New("invalid semantic versioning format")
 	ErrInvalidUUID             = errors.New("invalid uuid")
+
+	ErrInternalServer = errors.New("internal server error")
 )

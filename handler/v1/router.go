@@ -49,8 +49,10 @@ func (r *Router) uuid(s string) (uuid.UUID, error) {
 	return uuid, nil
 }
 
-func (r *Router) release() {
-	recover()
+func (r *Router) release(c *iris.Context) {
+	if o := recover(); o != nil {
+		r.err(c, ErrInternalServer)
+	}
 }
 
 // Err prints error message
@@ -79,13 +81,13 @@ func (r *Router) echo(c *iris.Context, d interface{}) {
 
 // Default route
 func (r *Router) Default(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	c.Write("ok")
 }
 
 // Create is the new semver handler
 func (r *Router) Create(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	var s string
 	if v := strings.TrimSpace(c.URLParam("version")); v != "" {
 		s = v
@@ -123,7 +125,7 @@ func (r *Router) Create(c *iris.Context) {
 
 // Get semver by project `id`
 func (r *Router) Get(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
@@ -132,7 +134,7 @@ func (r *Router) Get(c *iris.Context) {
 	vers, err := r.m.Get(
 		r.m.Path(id, "version"),
 	)
-	if len(vers) <= 0 {
+	if err != nil || len(vers) <= 0 {
 		r.err(c, ErrProjectNotFound)
 		return
 	}
@@ -153,7 +155,7 @@ func (r *Router) Get(c *iris.Context) {
 
 // Set Semver by `id`
 func (r *Router) Set(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
@@ -192,7 +194,7 @@ func (r *Router) Set(c *iris.Context) {
 
 // Bump version by type {major, minor, patch}
 func (r *Router) Bump(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
@@ -253,7 +255,7 @@ func (r *Router) Bump(c *iris.Context) {
 
 // History to list semver records
 func (r *Router) History(c *iris.Context) {
-	defer r.release()
+	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
@@ -299,7 +301,7 @@ func (r *Router) History(c *iris.Context) {
 
 // Delete to remove project
 func (r *Router) Delete(c *iris.Context) {
-	// defer r.release()
+	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
