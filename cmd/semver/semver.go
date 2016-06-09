@@ -1,24 +1,27 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/standard"
-	"github.com/samuelngs/semver/cmd/semver/handler/v1"
+	"github.com/kataras/iris"
+	"github.com/kataras/iris/config"
+	"github.com/samuelngs/semver/backend"
+	"github.com/samuelngs/semver/handler/v1"
 )
 
 var defaultAddr = ":4000"
 
 func main() {
 
-	e := echo.New()
+	conf := config.Iris{
+		Profile:               false,
+		DisablePathCorrection: true,
+		DisableBanner:         true,
+	}
 
-	e.Get("/", v1.Default)
-	e.Get("/v1/new", v1.New)
-	e.Get("/v1/:id", v1.Get)
-	e.Get("/v1/:id/bump", v1.Bump)
-	e.Get("/v1/:id/history", v1.History)
-	e.Post("/v1/:id", v1.Set)
-	e.Delete("/v1/:id", v1.Delete)
+	api := iris.New(conf)
 
-	e.Run(standard.New(defaultAddr))
+	// version 1
+	v1.New(new(backend.Redis), api)
+
+	// graceful shutdown
+	api.Listen(defaultAddr)
 }
