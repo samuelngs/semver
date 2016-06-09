@@ -3,7 +3,7 @@ Semantic Versioning as a Service
 
 ### Create Semver
 ```
-$ curl https://semver.co/v1/new
+$ curl https://semver.co/new
 e84e9872-fbf7-4d76-b222-68ba1f3e72b3
 ```
 
@@ -17,9 +17,9 @@ $ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3"
 ```
 $ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/bump"
 0.0.2
-$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/bump?level=major"
+$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/bump?type=major"
 1.0.0
-$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/bump?level=minor"
+$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/bump?type=minor"
 1.1.0
 ```
 
@@ -37,6 +37,30 @@ $ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3/history"
 1.0.0
 1.1.0
 3.1.0
+```
+
+### Delete Project
+```
+$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3" -XDELETE
+ok
+```
+
+### XML, JSON, and Plain-Text Response
+```
+$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3?output=json"
+{
+  "version": "0.0.1",
+  "major": 0,
+  "minor": 0,
+  "patch": 1
+}
+$ curl "https://semver.co/v1/e84e9872-fbf7-4d76-b222-68ba1f3e72b3?output=xml"
+<Versioning>
+   <version>0.0.1</version>
+   <major>0</major>
+   <minor>0</minor>
+   <patch>1</patch>
+</Versioning>
 ```
 
 ## Contributing
