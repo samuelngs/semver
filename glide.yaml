@@ -9,3 +9,4 @@ import:
 - package: google.golang.org/appengine
   subpackages:
   - datastore
+- package: github.com/boltdb/bolt

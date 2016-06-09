@@ -1,34 +1,95 @@
-hash: f72dd770b86f8f57ff89b1c9fbc43fcfcddebf329c68b27dd1984e69995ac616
-updated: 2016-05-25T22:37:16.944298099-06:00
+hash: cb50249728ff987080a005b2bd86dfc0d6a4780b5728a05b28b882753a4fc525
+updated: 2016-06-08T19:37:59.834510743-06:00
 imports:
 - name: github.com/blang/semver
   version: aea32c919a18e5ef4537bbd283ff29594b1b0165
-- name: github.com/labstack/echo
-  version: 7a66f226f2651f03dda0aaad9f3486bdf08247f6
+- name: github.com/boltdb/bolt
+  version: 05e441d7b3ded9164c5b912521504e7711dd0ba2
+- name: github.com/eknkc/amber
+  version: 91774f050c1453128146169b626489e60108ec03
   subpackages:
-  - engine/standard
-  - engine
-- name: github.com/labstack/gommon
-  version: b5f03e345acd2096591b6f738cb8d2b9b3231c50
+  - parser
+- name: github.com/fatih/color
+  version: 533cd7fd8a85905f67a1753afb4deddc85ea174f
+- name: github.com/flosch/pongo2
+  version: 7f5515449ea9bbeb00256d9cbb654c556e7d0146
+- name: github.com/garyburd/redigo
+  version: b8dc90050f24c1a73a52f107f3f575be67b21b7c
   subpackages:
-  - log
-  - color
+  - redis
+  - internal
+- name: github.com/imdario/mergo
+  version: 50d4dbd4eb0e84778abe37cefef140271d96fade
+- name: github.com/iris-contrib/websocket
+  version: b754661664740b86f44f7bb34ba11e44b6194445
+- name: github.com/Joker/jade
+  version: db4d7e4f68708c5020c392b380e3565df2132840
+- name: github.com/kataras/iris
+  version: 2da67206c8b7a13868ac8543ee77729c0f025454
+  subpackages:
+  - iris
+  - bindings
+  - config
+  - context
+  - errors
+  - logger
+  - mail
+  - render/rest
+  - render/template
+  - server
+  - sessions
+  - sessions/providers/memory
+  - sessions/providers/redis
+  - sessions/store
+  - utils
+  - websocket
+  - render/template/engine/amber
+  - render/template/engine/html
+  - render/template/engine/jade
+  - render/template/engine/markdown
+  - render/template/engine/pongo
+  - sessions/providers/redis/service
+- name: github.com/klauspost/compress
+  version: 14eb9c4951195779ecfbec34431a976de7335b0a
+  subpackages:
+  - gzip
+  - flate
+  - zlib
+- name: github.com/klauspost/cpuid
+  version: 09cded8978dc9e80714c4d85b0322337b0a1e5e0
+- name: github.com/klauspost/crc32
+  version: 19b0b332c9e4516a6370a0456e6182c3b5036720
 - name: github.com/mattn/go-colorable
-  version: e8a10ddc7d2a7fe255f6fd7f501070a4cb62c183
+  version: 9056b7a9f2d1f2d96498d6d146acd1f9d5ed3d59
 - name: github.com/mattn/go-isatty
   version: 56b76bdf51f7708750eac80fa38b952bb9f32639
+  repo: https://github.com/mattn/go-isatty
+- name: github.com/microcosm-cc/bluemonday
+  version: 4ac6f27528d0a3f2a59e0b0a6f6b3ff0bb89fe20
+- name: github.com/russross/blackfriday
+  version: 1d6b8e9301e720b08a8938b8c25c018285885438
 - name: github.com/satori/go.uuid
-  version: f9ab0dce87d815821e221626b772e3475a0d2749
-- name: github.com/valyala/fasttemplate
-  version: 3b874956e03f1636d171bda64b130f9135f42cff
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
+- name: github.com/valyala/fasthttp
+  version: 8f05edbec9fb5b0c7a4012ee746035a82e3e8bfb
+  subpackages:
+  - fasthttpadaptor
 - name: golang.org/x/net
-  version: dfd9ed699ea197b58a32e0d1dcfa2be66f127ec4
+  version: 313cf39d4ac368181bce6960ac9be9e7cee67e68
   subpackages:
   - context
+  - html
+  - html/atom
 - name: golang.org/x/sys
-  version: d4feaf1a7e61e1d9e79e6c4e76c6349e9cab0a03
+  version: 076b546753157f758b316e59bcb51e6807c04057
   subpackages:
   - unix
+- name: google.golang.org/appengine
+  version: 7f59a8c76b8594d06044bfe0bcbe475cb2020482
+  subpackages:
+  - datastore
 - name: gopkg.in/bsm/ratelimit.v1
   version: db14e161995a5177acef654cb0dd785e8ee8bc22
 - name: gopkg.in/redis.v3
