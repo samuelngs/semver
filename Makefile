@@ -17,4 +17,4 @@ test:
 
 .PHONY: image
 image: test all
-	docker build --no-cache --tag gcr.io/develo-pe/semver:latest --file Dockerfile .
+	docker build --no-cache --tag gcr.io/develo-pe/semver:latest --file deploy/Dockerfile .
