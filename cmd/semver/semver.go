@@ -1,27 +1,17 @@
 package main
 
 import (
-	"github.com/kataras/iris"
-	"github.com/kataras/iris/config"
-	"github.com/samuelngs/semver/backend"
-	"github.com/samuelngs/semver/handler/v1"
+	"github.com/samuelngs/semver/pkg/env"
+	"github.com/samuelngs/semver/server"
 )
 
 var defaultAddr = ":4000"
 
 func main() {
 
-	conf := config.Iris{
-		Profile:               false,
-		DisablePathCorrection: true,
-		DisableBanner:         true,
-	}
+	// create api server
+	api := server.New(env.Raw("SEMVER_BACKEND", "bolt"))
 
-	api := iris.New(conf)
-
-	// version 1
-	v1.New(new(backend.Bolt), api)
-
-	// start api server
+	// start server
 	api.Listen(defaultAddr)
 }
