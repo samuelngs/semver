@@ -20,8 +20,8 @@ func main() {
 	api := iris.New(conf)
 
 	// version 1
-	v1.New(new(backend.Redis), api)
+	v1.New(new(backend.Bolt), api)
 
-	// graceful shutdown
+	// start api server
 	api.Listen(defaultAddr)
 }
