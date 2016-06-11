@@ -5,6 +5,16 @@ import (
 	"strconv"
 )
 
+// Set env
+func Set(key string, vals ...string) error {
+	var val string
+	for _, v := range vals {
+		val = v
+		break
+	}
+	return os.Setenv(key, val)
+}
+
 // Raw to read environment key
 func Raw(name string, defs ...string) string {
 	var def string
