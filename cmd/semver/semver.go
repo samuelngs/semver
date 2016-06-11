@@ -10,7 +10,9 @@ var defaultAddr = ":4000"
 func main() {
 
 	// create api server
-	api := server.New(env.Raw("SEMVER_BACKEND", "bolt"))
+	api := server.New(
+		env.Raw("SEMVER_BACKEND_STORAGE", "bolt"),
+	)
 
 	// start server
 	api.Listen(defaultAddr)

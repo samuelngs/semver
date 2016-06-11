@@ -5,12 +5,13 @@ import (
 	"github.com/kataras/iris/config"
 	"github.com/samuelngs/semver/backend"
 	"github.com/samuelngs/semver/handler/v1"
+	"github.com/samuelngs/semver/pkg/env"
 )
 
 // New creates server
 func New(opts ...string) *iris.Iris {
 
-	var s string
+	s := env.Raw("SEMVER_BACKEND_STORAGE", "bolt")
 	for _, opt := range opts {
 		s = opt
 		break
