@@ -1,26 +1,29 @@
 package server
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/samuelngs/semver/backend"
 	"github.com/samuelngs/semver/handler/v1"
-	"github.com/samuelngs/semver/pkg/env"
 )
 
 // New creates server
-func New(opts ...string) *gin.Engine {
+func New(opts ...backend.Client) *gin.Engine {
 
-	s := env.Raw("SEMVER_BACKEND_STORAGE", "bolt")
+	var store backend.Client
+
 	for _, opt := range opts {
-		s = opt
+		store = opt
 		break
+	}
+
+	if store == nil {
+		log.Fatal("missing storage backend configuration")
 	}
 
 	api := gin.New()
 	api.Use(gin.Recovery())
-
-	// create backend
-	store := backend.Get(s)
 
 	// version 1
 	v1.New(store, api)
