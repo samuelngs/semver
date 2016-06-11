@@ -1,40 +1,37 @@
 package v1
 
 import (
-	"github.com/kataras/iris"
+	"github.com/gin-gonic/gin"
 	"github.com/samuelngs/semver/backend"
 )
 
 const defaultVersion = "0.0.1"
 
 // New create route
-func New(b backend.Client, c *iris.Iris) *Router {
+func New(b backend.Client, c *gin.Engine) *Router {
 
 	r := &Router{backend.New(b)}
 
-	// GET: /v1/new
-	c.Get("/new", r.Create)
-
-	g := c.Party("/v1")
+	g := c.Group("/v1")
 	{
 		// GET: /v1
-		g.Get("", r.Default)
-		g.Get("/", r.Default)
+		g.GET("", r.Default)
+		g.GET("/", r.Default)
 
-		// GET: /v1/{project-id}/history
-		g.Get("/:id/history", r.History)
-
-		// GET: /v1/{project-id}/bump
-		g.Get("/:id/bump", r.Bump)
-
-		// GET: /v1/{project-id}
-		g.Get("/:id", r.Get)
+		// GET: /v1/{project-id} or /v1/new
+		g.GET("/:id", r.Get)
 
 		// POST: /v1/{project-id}
-		g.Post("/:id", r.Set)
+		g.POST("/:id", r.Set)
 
 		// DELETE: /v1/{project-id}
-		g.Delete("/:id", r.Delete)
+		g.DELETE("/:id", r.Delete)
+
+		// GET: /v1/{project-id}/history
+		g.GET("/:id/history", r.History)
+
+		// GET: /v1/{project-id}/bump
+		g.GET("/:id/bump", r.Bump)
 	}
 	return r
 }

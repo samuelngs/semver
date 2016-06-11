@@ -15,5 +15,5 @@ func main() {
 	)
 
 	// start server
-	api.Listen(defaultAddr)
+	api.Run(defaultAddr)
 }

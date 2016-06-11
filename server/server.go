@@ -1,15 +1,14 @@
 package server
 
 import (
-	"github.com/kataras/iris"
-	"github.com/kataras/iris/config"
+	"github.com/gin-gonic/gin"
 	"github.com/samuelngs/semver/backend"
 	"github.com/samuelngs/semver/handler/v1"
 	"github.com/samuelngs/semver/pkg/env"
 )
 
 // New creates server
-func New(opts ...string) *iris.Iris {
+func New(opts ...string) *gin.Engine {
 
 	s := env.Raw("SEMVER_BACKEND_STORAGE", "bolt")
 	for _, opt := range opts {
@@ -17,13 +16,8 @@ func New(opts ...string) *iris.Iris {
 		break
 	}
 
-	conf := config.Iris{
-		Profile:               false,
-		DisablePathCorrection: true,
-		DisableBanner:         true,
-	}
-
-	api := iris.New(conf)
+	api := gin.New()
+	api.Use(gin.Recovery())
 
 	// create backend
 	store := backend.Get(s)

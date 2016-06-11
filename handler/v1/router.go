@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/kataras/iris"
+	"github.com/gin-gonic/gin"
 	"github.com/samuelngs/semver/backend"
 	"github.com/satori/go.uuid"
 )
@@ -49,47 +49,47 @@ func (r *Router) uuid(s string) (uuid.UUID, error) {
 	return uuid, nil
 }
 
-func (r *Router) release(c *iris.Context) {
+func (r *Router) release(c *gin.Context) {
 	if o := recover(); o != nil {
 		r.err(c, ErrInternalServer)
 	}
 }
 
 // Err prints error message
-func (r *Router) err(c *iris.Context, e error) {
-	switch c.URLParam("output") {
+func (r *Router) err(c *gin.Context, e error) {
+	switch c.DefaultQuery("output", "text") {
 	case "xml":
 		c.XML(http.StatusForbidden, &Warning{e.Error()})
 	case "json":
 		c.JSON(http.StatusForbidden, &Warning{e.Error()})
 	default:
-		c.Write("%v", e)
+		c.String(http.StatusForbidden, "%v", e)
 	}
 }
 
 // Echo prints data message
-func (r *Router) echo(c *iris.Context, d interface{}) {
-	switch c.URLParam("output") {
+func (r *Router) echo(c *gin.Context, d interface{}) {
+	switch c.DefaultQuery("output", "text") {
 	case "xml":
 		c.XML(http.StatusOK, d)
 	case "json":
 		c.JSON(http.StatusOK, d)
 	default:
-		c.Write("%v", d)
+		c.String(http.StatusOK, "%v", d)
 	}
 }
 
 // Default route
-func (r *Router) Default(c *iris.Context) {
+func (r *Router) Default(c *gin.Context) {
 	defer r.release(c)
-	c.Write("ok")
+	c.String(http.StatusOK, "ok")
 }
 
 // Create is the new semver handler
-func (r *Router) Create(c *iris.Context) {
+func (r *Router) Create(c *gin.Context) {
 	defer r.release(c)
 	var s string
-	if v := strings.TrimSpace(c.URLParam("version")); v != "" {
+	if v := strings.TrimSpace(c.Query("version")); v != "" {
 		s = v
 	} else {
 		s = defaultVersion
@@ -124,9 +124,13 @@ func (r *Router) Create(c *iris.Context) {
 }
 
 // Get semver by project `id`
-func (r *Router) Get(c *iris.Context) {
+func (r *Router) Get(c *gin.Context) {
 	defer r.release(c)
 	id := c.Param("id")
+	if id == "new" {
+		r.Create(c)
+		return
+	}
 	if _, err := r.uuid(id); err != nil {
 		r.err(c, err)
 		return
@@ -154,7 +158,7 @@ func (r *Router) Get(c *iris.Context) {
 }
 
 // Set Semver by `id`
-func (r *Router) Set(c *iris.Context) {
+func (r *Router) Set(c *gin.Context) {
 	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
@@ -169,7 +173,7 @@ func (r *Router) Set(c *iris.Context) {
 		r.err(c, ErrProjectNotFound)
 		return
 	}
-	ver, err := r.version(c.PostFormValue("version"))
+	ver, err := r.version(c.PostForm("version"))
 	if err != nil {
 		r.err(c, err)
 		return
@@ -193,7 +197,7 @@ func (r *Router) Set(c *iris.Context) {
 }
 
 // Bump version by type {major, minor, patch}
-func (r *Router) Bump(c *iris.Context) {
+func (r *Router) Bump(c *gin.Context) {
 	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
@@ -220,7 +224,7 @@ func (r *Router) Bump(c *iris.Context) {
 		r.err(c, err)
 		return
 	}
-	if typ := c.URLParam("type"); typ == "major" {
+	if typ := c.Query("type"); typ == "major" {
 		ver.Major++
 		ver.Minor = 0
 		ver.Patch = 0
@@ -254,7 +258,7 @@ func (r *Router) Bump(c *iris.Context) {
 }
 
 // History to list semver records
-func (r *Router) History(c *iris.Context) {
+func (r *Router) History(c *gin.Context) {
 	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
@@ -300,7 +304,7 @@ func (r *Router) History(c *iris.Context) {
 }
 
 // Delete to remove project
-func (r *Router) Delete(c *iris.Context) {
+func (r *Router) Delete(c *gin.Context) {
 	defer r.release(c)
 	id := c.Param("id")
 	if _, err := r.uuid(id); err != nil {
@@ -324,5 +328,5 @@ func (r *Router) Delete(c *iris.Context) {
 		r.err(c, err)
 		return
 	}
-	c.Write("ok")
+	c.String(http.StatusOK, "ok")
 }
