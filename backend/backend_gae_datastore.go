@@ -47,7 +47,7 @@ func (d *GceDatastore) Name() string {
 // Path method
 func (d *GceDatastore) Path(key *Key) string {
 	var dir string
-	for i, str := range key.dirs {
+	for i, str := range key.Dirs {
 		if i > 0 {
 			dir += ":"
 		}
@@ -63,7 +63,7 @@ func (d *GceDatastore) Exists(key *Key) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+	k := datastore.NewKey(ctx, "Semver", key.ID, 0, nil)
 	if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 		return false, err
 	} else if err != nil && err == datastore.ErrNoSuchEntity {
@@ -83,10 +83,10 @@ func (d *GceDatastore) Set(val string, keys ...*Key) error {
 	for _, key := range keys {
 		var e *Entity
 		var v *Versioning
-		if o, ok := cache[key.id]; ok {
+		if o, ok := cache[key.ID]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			k := datastore.NewKey(ctx, "Semver", key.ID, 0, nil)
 			if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 				return err
 			}
@@ -112,7 +112,7 @@ func (d *GceDatastore) Set(val string, keys ...*Key) error {
 			return err
 		}
 		e.Data = string(b[:])
-		cache[key.id] = e
+		cache[key.ID] = e
 	}
 	for i, e := range cache {
 		k := datastore.NewKey(ctx, "Semver", i, 0, nil)
@@ -136,10 +136,10 @@ func (d *GceDatastore) Get(keys ...*Key) ([]string, error) {
 	for _, key := range keys {
 		var e *Entity
 		var v *Versioning
-		if o, ok := cache[key.id]; ok {
+		if o, ok := cache[key.ID]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			k := datastore.NewKey(ctx, "Semver", key.ID, 0, nil)
 			if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 				return nil, err
 			} else if err != nil && err == datastore.ErrNoSuchEntity {
@@ -148,7 +148,7 @@ func (d *GceDatastore) Get(keys ...*Key) ([]string, error) {
 			if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
 				return nil, err
 			}
-			cache[key.id] = e
+			cache[key.ID] = e
 		}
 		p := d.Path(key)
 		if p == "version" {
@@ -174,7 +174,7 @@ func (d *GceDatastore) List(key *Key) ([]*Key, error) {
 		return nil, err
 	}
 	r := []*Key{}
-	k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+	k := datastore.NewKey(ctx, "Semver", key.ID, 0, nil)
 	if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 		return nil, err
 	} else if err != nil && err == datastore.ErrNoSuchEntity {
@@ -185,7 +185,7 @@ func (d *GceDatastore) List(key *Key) ([]*Key, error) {
 	}
 	for k := range v.Archive {
 		s := strings.Split(k, ":")
-		r = append(r, &Key{id: key.id, dirs: s})
+		r = append(r, &Key{ID: key.ID, Dirs: s})
 	}
 	return r, nil
 }
@@ -201,10 +201,10 @@ func (d *GceDatastore) Delete(keys ...*Key) error {
 	for _, key := range keys {
 		var e *Entity
 		var v *Versioning
-		if o, ok := cache[key.id]; ok {
+		if o, ok := cache[key.ID]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			k := datastore.NewKey(ctx, "Semver", key.ID, 0, nil)
 			if err := client.Get(ctx, k, &v); err != nil && err != datastore.ErrNoSuchEntity {
 				return err
 			} else if err != nil && err == datastore.ErrNoSuchEntity {
@@ -225,7 +225,7 @@ func (d *GceDatastore) Delete(keys ...*Key) error {
 			return err
 		}
 		e.Data = string(b[:])
-		cache[key.id] = e
+		cache[key.ID] = e
 	}
 	for i, e := range cache {
 		var v *Versioning

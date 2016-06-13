@@ -33,8 +33,8 @@ func (r *Redis) Name() string {
 
 // Path method
 func (r *Redis) Path(key *Key) string {
-	dir := fmt.Sprintf("semver:db:%s", key.id)
-	for _, str := range key.dirs {
+	dir := fmt.Sprintf("semver:db:%s", key.ID)
+	for _, str := range key.Dirs {
 		dir += ":" + str
 	}
 	return dir
@@ -84,16 +84,16 @@ func (r *Redis) Get(keys ...*Key) ([]string, error) {
 
 // List method
 func (r *Redis) List(key *Key) ([]*Key, error) {
-	temp := &Key{id: key.id, dirs: make([]string, len(key.dirs))}
-	for i, v := range key.dirs {
-		temp.dirs[i] = v
+	temp := &Key{ID: key.ID, Dirs: make([]string, len(key.Dirs))}
+	for i, v := range key.Dirs {
+		temp.Dirs[i] = v
 	}
-	if len(temp.dirs) > 0 {
-		if s := temp.dirs[len(temp.dirs)-1]; !strings.Contains(s, "*") {
-			temp.dirs = append(temp.dirs, "*")
+	if len(temp.Dirs) > 0 {
+		if s := temp.Dirs[len(temp.Dirs)-1]; !strings.Contains(s, "*") {
+			temp.Dirs = append(temp.Dirs, "*")
 		}
 	} else {
-		temp.dirs = append(temp.dirs, "*")
+		temp.Dirs = append(temp.Dirs, "*")
 	}
 	tar := strings.TrimSuffix(r.Path(temp), ":*")
 	ids, err := r.c.Keys(r.Path(temp)).Result()
@@ -105,16 +105,16 @@ func (r *Redis) List(key *Key) ([]*Key, error) {
 		pfx := strings.Replace(id, tar, "", -1)
 		str := strings.TrimPrefix(pfx, ":")
 		parts := strings.SplitAfter(str, ":")
-		dirs := make([]string, len(key.dirs)+len(parts))
-		for i, v := range key.dirs {
+		dirs := make([]string, len(key.Dirs)+len(parts))
+		for i, v := range key.Dirs {
 			dirs[i] = v
 		}
 		for i, v := range parts {
-			dirs[i+len(key.dirs)] = v
+			dirs[i+len(key.Dirs)] = v
 		}
 		keys[i] = &Key{
-			id:   key.id,
-			dirs: dirs,
+			ID:   key.ID,
+			Dirs: dirs,
 		}
 	}
 	return keys, nil

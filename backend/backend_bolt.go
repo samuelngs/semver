@@ -38,7 +38,7 @@ func (b *Bolt) Name() string {
 // Path method
 func (b *Bolt) Path(key *Key) string {
 	var dir string
-	for i, str := range key.dirs {
+	for i, str := range key.Dirs {
 		if i > 0 {
 			dir += ":"
 		}
@@ -51,7 +51,7 @@ func (b *Bolt) Path(key *Key) string {
 func (b *Bolt) Exists(key *Key) (bool, error) {
 	var exists bool
 	err := b.db.View(func(tx *bolt.Tx) error {
-		if bucket := tx.Bucket([]byte(key.id)); bucket != nil {
+		if bucket := tx.Bucket([]byte(key.ID)); bucket != nil {
 			exists = true
 		}
 		return nil
@@ -66,7 +66,7 @@ func (b *Bolt) Exists(key *Key) (bool, error) {
 func (b *Bolt) Set(val string, keys ...*Key) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		for _, key := range keys {
-			bucket, err := tx.CreateBucketIfNotExists([]byte(key.id))
+			bucket, err := tx.CreateBucketIfNotExists([]byte(key.ID))
 			if err != nil {
 				return err
 			}
@@ -86,7 +86,7 @@ func (b *Bolt) Get(keys ...*Key) ([]string, error) {
 	vals := []string{}
 	err := b.db.View(func(tx *bolt.Tx) error {
 		for _, key := range keys {
-			bucket := tx.Bucket([]byte(key.id))
+			bucket := tx.Bucket([]byte(key.ID))
 			if bucket == nil {
 				return ErrRecordNotFound
 			}
@@ -105,7 +105,7 @@ func (b *Bolt) Get(keys ...*Key) ([]string, error) {
 func (b *Bolt) List(key *Key) ([]*Key, error) {
 	keys := []*Key{}
 	err := b.db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(key.id))
+		bucket := tx.Bucket([]byte(key.ID))
 		if bucket == nil {
 			return ErrRecordNotFound
 		}
@@ -113,11 +113,11 @@ func (b *Bolt) List(key *Key) ([]*Key, error) {
 		prefix := []byte(b.Path(key))
 		if len(prefix) > 0 {
 			for k, _ := cursor.Seek(prefix); bytes.HasPrefix(k, prefix); k, _ = cursor.Next() {
-				keys = append(keys, &Key{id: key.id, dirs: strings.Split(string(k[:]), ":")})
+				keys = append(keys, &Key{ID: key.ID, Dirs: strings.Split(string(k[:]), ":")})
 			}
 		} else {
 			for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
-				keys = append(keys, &Key{id: key.id, dirs: strings.Split(string(k[:]), ":")})
+				keys = append(keys, &Key{ID: key.ID, Dirs: strings.Split(string(k[:]), ":")})
 			}
 		}
 		return nil
@@ -133,12 +133,12 @@ func (b *Bolt) Delete(keys ...*Key) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		for _, key := range keys {
 			if path := b.Path(key); path == "" {
-				if err := tx.DeleteBucket([]byte(key.id)); err != nil {
+				if err := tx.DeleteBucket([]byte(key.ID)); err != nil {
 					return err
 				}
 			} else {
 				var count int
-				bucket := tx.Bucket([]byte(key.id))
+				bucket := tx.Bucket([]byte(key.ID))
 				if bucket == nil {
 					continue
 				}
@@ -150,7 +150,7 @@ func (b *Bolt) Delete(keys ...*Key) error {
 					return nil
 				})
 				if count == 0 {
-					if err := tx.DeleteBucket([]byte(key.id)); err != nil {
+					if err := tx.DeleteBucket([]byte(key.ID)); err != nil {
 						return err
 					}
 				}
