@@ -41,7 +41,7 @@ func (m *Manager) Name() string {
 // Path creates a key
 func (m *Manager) Path(id string, dirs ...string) *Key {
 	m.prepare()
-	return &Key{id: id, dirs: dirs}
+	return &Key{ID: id, Dirs: dirs}
 }
 
 // Exists checker

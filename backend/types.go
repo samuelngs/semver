@@ -2,8 +2,8 @@ package backend
 
 // Key struct
 type Key struct {
-	id   string
-	dirs []string
+	ID   string
+	Dirs []string
 }
 
 // Entity represents a record
