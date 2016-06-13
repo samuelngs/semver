@@ -23,6 +23,8 @@ func storage() backend.Client {
 		return new(backend.Bolt)
 	case "redis":
 		return new(backend.Redis)
+	case "cassandra":
+		return new(backend.Cassandra)
 	case "gce-datastore":
 		return new(backend.GceDatastore)
 	}
