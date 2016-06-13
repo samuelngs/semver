@@ -1,32 +1,41 @@
 package backend
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/samuelngs/semver/pkg/env"
 
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2/google"
+
+	"google.golang.org/appengine"
+	"google.golang.org/cloud"
 	"google.golang.org/cloud/datastore"
 )
 
 // GceDatastore backend for semver
 type GceDatastore struct {
 	*Core
-	ctx    context.Context
-	client *datastore.Client
+}
+
+// client creates gce client
+func (d *GceDatastore) storage() (context.Context, *datastore.Client, error) {
+	key := []byte(env.Raw("SEMVER_BACKEND_TOKEN"))
+	conf, err := google.JWTConfigFromJSON(key, datastore.ScopeDatastore)
+	if err != nil {
+		return nil, nil, err
+	}
+	ctx := appengine.BackgroundContext()
+	client, err := datastore.NewClient(ctx, appengine.AppID(ctx), cloud.WithTokenSource(conf.TokenSource(ctx)))
+	if err != nil {
+		return nil, nil, err
+	}
+	return ctx, client, nil
 }
 
 // Init method
 func (d *GceDatastore) Init() error {
-	d.ctx = context.Background()
-	client, err := datastore.NewClient(
-		d.ctx,
-		env.Raw("SEMVER_BACKEND_ADDR", "semver-co"),
-	)
-	if err != nil {
-		return err
-	}
-	d.client = client
 	return nil
 }
 
@@ -49,9 +58,13 @@ func (d *GceDatastore) Path(key *Key) string {
 
 // Exists method
 func (d *GceDatastore) Exists(key *Key) (bool, error) {
-	var e *Entity
-	k := datastore.NewKey(d.ctx, "Semver", key.id, 0, nil)
-	if err := d.client.Get(d.ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
+	var e Entity
+	ctx, client, err := d.storage()
+	if err != nil {
+		return false, err
+	}
+	k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+	if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 		return false, err
 	} else if err != nil && err == datastore.ErrNoSuchEntity {
 		return false, nil
@@ -61,40 +74,49 @@ func (d *GceDatastore) Exists(key *Key) (bool, error) {
 
 // Set method
 func (d *GceDatastore) Set(val string, keys ...*Key) error {
+	ctx, client, err := d.storage()
+	if err != nil {
+		return err
+	}
 	// entity cache
 	cache := make(map[string]*Entity)
 	for _, key := range keys {
 		var e *Entity
+		var v *Versioning
 		if o, ok := cache[key.id]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(d.ctx, "Semver", key.id, 0, nil)
-			if err := d.client.Get(d.ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
+			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 				return err
 			}
 		}
+		if e == nil {
+			e = new(Entity)
+		}
+		if e.Data != "" {
+			if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
+				return err
+			}
+		} else {
+			v = &Versioning{Archive: make(map[string]string)}
+		}
 		p := d.Path(key)
 		if p == "version" {
-			e.Version = val
+			v.Version = val
 		} else {
-			x := -1
-			for i, m := range e.Archive {
-				if p == m.Key {
-					x = i
-					break
-				}
-			}
-			if x > -1 {
-				e.Archive[x].Val = val
-			} else {
-				e.Archive = append(e.Archive, &Map{Key: p, Val: val})
-			}
+			v.Archive[p] = val
 		}
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		e.Data = string(b[:])
 		cache[key.id] = e
 	}
 	for i, e := range cache {
-		k := datastore.NewKey(d.ctx, "Semver", i, 0, nil)
-		if _, err := d.client.Put(d.ctx, k, e); err != nil {
+		k := datastore.NewKey(ctx, "Semver", i, 0, nil)
+		if _, err := client.Put(ctx, k, e); err != nil {
 			return err
 		}
 	}
@@ -103,35 +125,41 @@ func (d *GceDatastore) Set(val string, keys ...*Key) error {
 
 // Get method
 func (d *GceDatastore) Get(keys ...*Key) ([]string, error) {
+	ctx, client, err := d.storage()
+	if err != nil {
+		return nil, err
+	}
 	// entity cache
 	cache := make(map[string]*Entity)
 	// return values
 	store := []string{}
 	for _, key := range keys {
 		var e *Entity
+		var v *Versioning
 		if o, ok := cache[key.id]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(d.ctx, "Semver", key.id, 0, nil)
-			if err := d.client.Get(d.ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
+			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 				return nil, err
 			} else if err != nil && err == datastore.ErrNoSuchEntity {
 				return nil, ErrRecordNotFound
+			}
+			if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
+				return nil, err
 			}
 			cache[key.id] = e
 		}
 		p := d.Path(key)
 		if p == "version" {
-			store = append(store, e.Version)
+			store = append(store, v.Version)
 		} else {
-			var s string
-			for _, m := range e.Archive {
-				if p == m.Key {
-					s = m.Val
+			for k, s := range v.Archive {
+				if p == k {
+					store = append(store, s)
 					break
 				}
 			}
-			store = append(store, s)
 		}
 	}
 	return store, nil
@@ -140,15 +168,23 @@ func (d *GceDatastore) Get(keys ...*Key) ([]string, error) {
 // List method
 func (d *GceDatastore) List(key *Key) ([]*Key, error) {
 	var e *Entity
+	var v *Versioning
+	ctx, client, err := d.storage()
+	if err != nil {
+		return nil, err
+	}
 	r := []*Key{}
-	k := datastore.NewKey(d.ctx, "Semver", key.id, 0, nil)
-	if err := d.client.Get(d.ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
+	k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+	if err := client.Get(ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
 		return nil, err
 	} else if err != nil && err == datastore.ErrNoSuchEntity {
 		return nil, ErrRecordNotFound
 	}
-	for _, m := range e.Archive {
-		s := strings.Split(m.Key, ":")
+	if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
+		return nil, err
+	}
+	for k := range v.Archive {
+		s := strings.Split(k, ":")
 		r = append(r, &Key{id: key.id, dirs: s})
 	}
 	return r, nil
@@ -156,45 +192,53 @@ func (d *GceDatastore) List(key *Key) ([]*Key, error) {
 
 // Delete method
 func (d *GceDatastore) Delete(keys ...*Key) error {
+	ctx, client, err := d.storage()
+	if err != nil {
+		return err
+	}
 	// entity cache
 	cache := make(map[string]*Entity)
 	for _, key := range keys {
 		var e *Entity
+		var v *Versioning
 		if o, ok := cache[key.id]; ok {
 			e = o
 		} else {
-			k := datastore.NewKey(d.ctx, "Semver", key.id, 0, nil)
-			if err := d.client.Get(d.ctx, k, &e); err != nil && err != datastore.ErrNoSuchEntity {
+			k := datastore.NewKey(ctx, "Semver", key.id, 0, nil)
+			if err := client.Get(ctx, k, &v); err != nil && err != datastore.ErrNoSuchEntity {
 				return err
 			} else if err != nil && err == datastore.ErrNoSuchEntity {
 				continue
 			}
+			if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
+				return err
+			}
 		}
 		p := d.Path(key)
 		if p == "version" {
-			e.Version = ""
+			v.Version = ""
 		} else {
-			x := -1
-			for i, m := range e.Archive {
-				if p == m.Key {
-					x = i
-					break
-				}
-			}
-			if x > -1 {
-				e.Archive = append(e.Archive[:x], e.Archive[x+1:]...)
-			}
+			delete(v.Archive, p)
 		}
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		e.Data = string(b[:])
 		cache[key.id] = e
 	}
 	for i, e := range cache {
-		k := datastore.NewKey(d.ctx, "Semver", i, 0, nil)
-		if len(e.Archive) > 0 {
-			if _, err := d.client.Put(d.ctx, k, e); err != nil {
+		var v *Versioning
+		k := datastore.NewKey(ctx, "Semver", i, 0, nil)
+		if err := json.Unmarshal([]byte(e.Data), &v); err != nil {
+			return err
+		}
+		if len(v.Archive) > 0 {
+			if _, err := client.Put(ctx, k, e); err != nil {
 				return err
 			}
 		} else {
-			if err := d.client.Delete(d.ctx, k); err != nil {
+			if err := client.Delete(ctx, k); err != nil {
 				return err
 			}
 		}

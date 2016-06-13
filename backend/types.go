@@ -6,14 +6,13 @@ type Key struct {
 	dirs []string
 }
 
-// Entity represents a version record
+// Entity represents a record
 type Entity struct {
-	Version string
-	Archive []*Map
+	Data string `json:"data"`
 }
 
-// Map represents map type object
-type Map struct {
-	Key string
-	Val string
+// Versioning represents a version record
+type Versioning struct {
+	Version string            `json:"version"`
+	Archive map[string]string `json:"archive"`
 }
