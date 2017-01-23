@@ -3,7 +3,7 @@ Semantic Versioning as a Service
 
 ### Create Semver
 ```
-$ curl https://semver.co/new
+$ curl https://semver.co/v1/new
 e84e9872-fbf7-4d76-b222-68ba1f3e72b3
 ```
 
